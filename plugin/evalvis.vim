@@ -18,7 +18,7 @@ endfunction
 function! evalvis#eval_visual() abort
   let old_reg = @a
   normal! gv"ay
-  let selected = @a
+  let selected = trim(@a)
   try
     let evaluated = s:eval_string(selected)
     " If evaluated value is not a string, JSON encode it.
