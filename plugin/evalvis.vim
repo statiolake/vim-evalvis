@@ -12,7 +12,9 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 function! s:eval_string(expr) abort
-  return eval(printf('call({-> %s}, [])', a:expr))
+  let lang = get(g:, 'evalvis#language', 'vim')
+  let Evaluator = lang ==# 'python3' ? function('py3eval') : function('eval')
+  return Evaluator(a:expr)
 endfunction
 
 function! evalvis#eval_visual() abort
