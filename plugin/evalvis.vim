@@ -67,6 +67,7 @@ function s:eval_python3_system(expr) abort
   if prog !~ "\n"
     " Treat it as a simple expression. In this mode, the evaluation result is
     " the result of the expression.
+    let preserved_indent = matchstr(prog, '^\s*')
     let prog = 'print(' .. trim(prog) .. ')'
   else
     " Treat it as a multi-line script. In this mode, the evaluation result is
