@@ -57,8 +57,8 @@ function s:remove_indent(expr) abort
 endfunction
 
 function s:eval_python3_system(expr) abort
-  let host_prog = get(
-    \   g:, 'evalvis#system_python3_path',
+  let interpreter_path = get(
+    \   g:, 'evalvis#python3_system_interpreter_path',
     \   get(g:, 'python3_host_prog', 'python3')
     \ )
   let prog = substitute(a:expr, '\n\+$', '', '')
@@ -73,7 +73,7 @@ function s:eval_python3_system(expr) abort
     let [prog, preserved_indent] = s:remove_indent(prog)
   endif
 
-  let result = system([host_prog], prog)
+  let result = system([interpreter_path], prog)
   let indent_restored = join(map(
     \   split(result, "\n"),
     \   'preserved_indent .. v:val'
