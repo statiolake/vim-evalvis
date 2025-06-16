@@ -16,6 +16,7 @@ function! s:eval_string(expr) abort
   let Evaluator =
     \ lang ==# 'python3' ? function('s:eval_python3') :
     \ lang ==# 'python3-system' ? function('s:eval_python3_system') :
+    \ lang ==# 'deno' ? function('s:eval_deno') :
     \ function('s:eval_vim')
   return Evaluator(a:expr)
 endfunction
@@ -78,6 +79,33 @@ function s:eval_python3_system(expr) abort
   let prog = header .. "\n" .. prog
 
   let result = system([interpreter_path], prog)
+  let indent_restored = join(map(
+    \   split(result, "\n"),
+    \   'preserved_indent .. v:val'
+    \ ), "\n")
+
+  return substitute(indent_restored, '\n\+$', '', '')
+endfunction
+
+function s:eval_deno(expr) abort
+  let interpreter_path = get(g:, 'evalvis#deno_interpreter_path', 'deno')
+  let header = get(g:, 'evalvis#deno_header', '')
+  let prog = substitute(a:expr, '\n\+$', '', '')
+  let preserved_indent = ''
+  if prog !~ "\n"
+    " Treat it as a simple expression. In this mode, the evaluation result is
+    " the result of the expression.
+    let preserved_indent = matchstr(prog, '^\s*')
+    let prog = 'console.log(' .. trim(prog) .. ')'
+  else
+    " Treat it as a multi-line script. In this mode, the evaluation result is
+    " the standard output of the script.
+    let [prog, preserved_indent] = s:remove_indent(prog)
+  endif
+
+  let prog = header .. "\n" .. prog
+
+  let result = system([interpreter_path, 'eval', '--quiet', prog])
   let indent_restored = join(map(
     \   split(result, "\n"),
     \   'preserved_indent .. v:val'
